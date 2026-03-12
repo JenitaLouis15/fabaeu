@@ -24,12 +24,13 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const scrollRef = useRef();
   const inputRef = useRef();
+  const lastMsgRef = useRef();
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (lastMsgRef.current) {
+      lastMsgRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [messages, typing]);
+  }, [messages]);
 
   const formatTime = (date) =>
     date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -112,7 +113,6 @@ export default function App() {
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
         @keyframes appEnter { from{opacity:0;transform:scale(0.98)} to{opacity:1;transform:scale(1)} }
 
-        /* TOGGLE */
         .toggle {
           width: 44px; height: 24px; border-radius: 12px;
           border: none; cursor: pointer; position: relative;
@@ -126,7 +126,6 @@ export default function App() {
           font-size: 11px; pointer-events: none;
         }
 
-        /* LANDING */
         .landing {
           height: 100vh; height: 100dvh;
           display: flex; flex-direction: column;
@@ -198,24 +197,19 @@ export default function App() {
         .dots-grid.br { bottom: 60px; right: 40px; }
         .dot-g { display: inline-block; width: 4px; height: 4px; border-radius: 50%; margin: 5px; }
 
-        /* APP */
         .app {
           height: 100vh; height: 100dvh; display: flex; overflow: hidden;
           animation: appEnter 0.5s ease both;
         }
 
-        /* SIDEBAR */
         .sidebar {
           width: 260px; flex-shrink: 0;
           display: flex; flex-direction: column; height: 100vh;
           transition: width 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
           overflow: hidden;
         }
-        .sidebar.closed {
-          width: 0; opacity: 0; pointer-events: none;
-        }
+        .sidebar.closed { width: 0; opacity: 0; pointer-events: none; }
 
-        /* mobile: sidebar is overlay */
         .sidebar-overlay {
           display: none; position: fixed; inset: 0; z-index: 40;
           background: rgba(0,0,0,0.25);
@@ -271,14 +265,9 @@ export default function App() {
           padding: 8px 10px; border-radius: 7px; cursor: pointer;
           font-size: 13px; transition: background 0.15s; margin-bottom: 2px; line-height: 1.4;
         }
-        .sidebar-footer {
-          padding: 16px 18px; font-size: 11px; line-height: 1.8; flex-shrink: 0;
-        }
+        .sidebar-footer { padding: 16px 18px; font-size: 11px; line-height: 1.8; flex-shrink: 0; }
 
-        /* MAIN */
         .main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; }
-
-        /* TOPBAR */
         .topbar {
           flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
           padding: 12px 20px;
@@ -303,7 +292,6 @@ export default function App() {
           white-space: nowrap;
         }
 
-        /* CHAT */
         .chat-area { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 24px 0 12px; }
         .chat-area::-webkit-scrollbar { width: 5px; }
         .chat-area::-webkit-scrollbar-thumb { background: #d4cdc4; border-radius: 10px; }
@@ -407,37 +395,22 @@ export default function App() {
       {started && (
         <div className="app" style={{background: bg}}>
 
-          {/* Mobile overlay */}
-          <div
-            className={`sidebar-overlay ${sidebarOpen ? "open" : ""}`}
-            onClick={()=>setSidebarOpen(false)}
-          />
+          <div className={`sidebar-overlay ${sidebarOpen ? "open" : ""}`} onClick={()=>setSidebarOpen(false)} />
 
-          {/* SIDEBAR */}
-          <div
-            className={`sidebar ${sidebarOpen ? "open-mobile" : "closed"}`}
-            style={{background: surface, borderRight: `1px solid ${border}`}}
-          >
+          <div className={`sidebar ${sidebarOpen ? "open-mobile" : "closed"}`} style={{background: surface, borderRight: `1px solid ${border}`}}>
             <div className="sidebar-top" style={{borderBottom:`1px solid ${border}`}}>
               <div className="brand">
                 <div className="brand-icon">✦</div>
                 <span className="brand-text" style={{color: text}}>FABAEU</span>
-                {/* ✕ closes sidebar */}
-                <button
-                  className="close-sidebar-btn"
-                  style={{color: textSoft}}
+                <button className="close-sidebar-btn" style={{color: textSoft}}
                   onMouseEnter={e=>e.currentTarget.style.background=d?"#222":"#ede8e0"}
                   onMouseLeave={e=>e.currentTarget.style.background="transparent"}
-                  onClick={()=>setSidebarOpen(false)}
-                >✕</button>
+                  onClick={()=>setSidebarOpen(false)}>✕</button>
               </div>
-              <button
-                className="new-chat-btn"
-                style={{border:`1px solid ${cardBorder}`, color: textMid}}
+              <button className="new-chat-btn" style={{border:`1px solid ${cardBorder}`, color: textMid}}
                 onMouseEnter={e=>e.currentTarget.style.background=d?"#222":"#ede8e0"}
                 onMouseLeave={e=>e.currentTarget.style.background="transparent"}
-                onClick={clearChat}
-              >✏️&nbsp; New conversation</button>
+                onClick={clearChat}>✏️&nbsp; New conversation</button>
             </div>
 
             <div className="sidebar-scroll">
@@ -454,18 +427,14 @@ export default function App() {
                   <span>Status</span><span style={{color:"#4caf7d",fontWeight:600}}>● Online</span>
                 </div>
               </div>
-
               <div className="s-divider" style={{background: border}}/>
-
               <div className="prompt-section">
                 <div className="prompt-label" style={{color: textSoft}}>Quick prompts</div>
                 {SUGGESTIONS.map((s,i)=>(
                   <div key={i} className="prompt-item" style={{color: textMid}}
                     onMouseEnter={e=>e.currentTarget.style.background=d?"#222":"#ede8e0"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}
-                    onClick={()=>sendMessage(s)}>
-                    💬&nbsp; {s}
-                  </div>
+                    onClick={()=>sendMessage(s)}>💬&nbsp; {s}</div>
                 ))}
               </div>
             </div>
@@ -475,20 +444,13 @@ export default function App() {
             </div>
           </div>
 
-          {/* MAIN */}
           <div className="main" style={{background: bg}}>
-
-            {/* TOPBAR */}
             <div className="topbar" style={{background: bg, borderBottom:`1px solid ${border}`}}>
               <div className="topbar-left">
-                {/* ☰ opens sidebar */}
-                <button
-                  className="menu-btn"
-                  style={{color: textMid}}
+                <button className="menu-btn" style={{color: textMid}}
                   onMouseEnter={e=>e.currentTarget.style.background=d?"#222":"#ede8e0"}
                   onMouseLeave={e=>e.currentTarget.style.background="transparent"}
-                  onClick={()=>setSidebarOpen(o=>!o)}
-                >☰</button>
+                  onClick={()=>setSidebarOpen(o=>!o)}>☰</button>
                 <div>
                   <div className="topbar-title" style={{color: text}}>FABAEU</div>
                   <div className="topbar-sub" style={{color: textSoft}}>
@@ -496,33 +458,22 @@ export default function App() {
                   </div>
                 </div>
               </div>
-
               <div className="topbar-right">
-                <span className="counter-badge" style={{background:d?"#222":"#ede8e0", color: textSoft}}>
-                  {msgCount} messages
-                </span>
-
-                {/* DARK / LIGHT TOGGLE */}
+                <span className="counter-badge" style={{background:d?"#222":"#ede8e0", color: textSoft}}>{msgCount} messages</span>
                 <button className="toggle" style={{background: d?"#cc785c":"#d4cdc4"}} onClick={()=>setDark(o=>!o)}>
                   <div className="toggle-thumb" style={{transform: d?"translateX(20px)":"translateX(0)"}}>
                     {d?"🌙":"☀️"}
                   </div>
                 </button>
-
-                <button
-                  className="clear-btn"
-                  style={{border:`1px solid ${cardBorder}`, color: textMid}}
+                <button className="clear-btn" style={{border:`1px solid ${cardBorder}`, color: textMid}}
                   onMouseEnter={e=>{e.currentTarget.style.background=d?"#2a1a1a":"#fce8e2";e.currentTarget.style.color="#cc785c";e.currentTarget.style.borderColor="#cc785c";}}
                   onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color=textMid;e.currentTarget.style.borderColor=cardBorder;}}
-                  onClick={clearChat}
-                >Clear chat</button>
+                  onClick={clearChat}>Clear chat</button>
               </div>
             </div>
 
-            {/* CHAT AREA */}
             <div className="chat-area" ref={scrollRef}>
               <div className="chat-inner">
-
                 {showSuggestions && (
                   <div className="welcome-block">
                     <div className="welcome-icon">✦</div>
@@ -531,13 +482,18 @@ export default function App() {
                   </div>
                 )}
 
-                <div className="date-div" style={{"--line-color": border}}>
+                <div className="date-div">
                   <style>{`.date-div::before,.date-div::after{background:${border}}`}</style>
                   {new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}
                 </div>
 
-                {messages.map((msg)=>(
-                  <div key={msg.id} className={`msg-row ${msg.sender}`}>
+                {/* ✅ CHANGE 3: added index + lastMsgRef */}
+                {messages.map((msg, index)=>(
+                  <div
+                    key={msg.id}
+                    className={`msg-row ${msg.sender}`}
+                    ref={index === messages.length - 1 ? lastMsgRef : null}
+                  >
                     <div className="avatar" style={{
                       background: msg.sender==="bot" ? "#cc785c" : d?"#2a2a2a":"#e8e2d9",
                       color: msg.sender==="bot" ? "#fff" : d?"#9d9590":"#4a4540",
@@ -572,7 +528,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* SUGGESTION CARDS */}
             {showSuggestions && (
               <div className="suggestions">
                 {[["⚛️",0],["🧠",1],["🤖",2],["🌌",3]].map(([icon,i])=>(
@@ -587,16 +542,9 @@ export default function App() {
               </div>
             )}
 
-            {/* INPUT */}
             <div className="input-wrap">
-              <div className="input-box" style={{
-                background: card, border:`1px solid ${d?"#444":"#d4cdc4"}`,
-                boxShadow: d?"none":"0 2px 12px rgba(0,0,0,0.06)"
-              }}>
-                <input
-                  ref={inputRef}
-                  className="chat-input"
-                  style={{color: text}}
+              <div className="input-box" style={{background: card, border:`1px solid ${d?"#444":"#d4cdc4"}`, boxShadow: d?"none":"0 2px 12px rgba(0,0,0,0.06)"}}>
+                <input ref={inputRef} className="chat-input" style={{color: text}}
                   placeholder="Message FABAEU..."
                   value={input}
                   onChange={e=>setInput(e.target.value)}
